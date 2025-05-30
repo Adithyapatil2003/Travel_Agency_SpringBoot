@@ -44,7 +44,7 @@ src/
 
 │   │   └── com/
 
-│   │       └── kk/
+│   │       └── cts/
 
 │   │           ├── controller/        # Contains REST controllers to handle HTTP requests.
 
@@ -60,7 +60,7 @@ src/
 
 │   │           ├── validations/       # Validation groups for conditional validation rules.
 
-│   │           └── utils/             # Utility classes for common functionality.
+│   │           └── util/             # Utility classes for common functionality.
 
 │   ├── resources/
 
@@ -167,5 +167,5 @@ src/
  
 ## Contact
  
-For any questions or issues, please contact [kranthikiran43604@gmail.com](mailto:kranthikiran43604@gmail.com)
+For any questions or issues, please contact [adithyapatil2003@gmail.com](mailto:adithyapatil2003@gmail.com)
  
