@@ -1,0 +1,236 @@
+package com.cts.controller;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import com.cts.dtos.AddressDto;
+import com.cts.dtos.CustomerDetailsDto;
+import com.cts.dtos.TourDetailsDto;
+import com.cts.entities.Address;
+import com.cts.entities.CustomerDetails;
+import com.cts.entities.TourDetails;
+import com.cts.service.impl.CustomerDetailsServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+
+class CustomerDetailsControllerTest {
+
+	@Mock
+	@Autowired
+	private MockMvc mockMvc;
+	@MockitoBean
+	private CustomerDetailsServiceImpl customerDetailsServiceImpl;
+	@Autowired
+	private ObjectMapper objectMapper;
+
+	CustomerDetailsDto customer1;
+	CustomerDetailsDto customer2;
+	CustomerDetailsDto customer3;
+	List<CustomerDetailsDto> customers = new ArrayList<CustomerDetailsDto>();
+	TourDetailsDto tour1;
+	TourDetailsDto tour2;
+	TourDetailsDto tour3;
+	List<TourDetailsDto> tours = new ArrayList<TourDetailsDto>();
+
+	@BeforeEach
+	void setUp() {
+		// Customer 1
+		AddressDto permanentAddress1 = new AddressDto("123", "Main St", "Near Park", "Springfield", "IL", 62701);
+		AddressDto communicationAddress1 = new AddressDto("123", "Main St", "Near Park", "Springfield", "IL", 62701);
+		tour1 = new TourDetailsDto(1, "Springfield", 1500.00, "Chicago",
+				Arrays.asList("Lincoln Home", "Millennium Park"), "Weekend Getaway");
+		customer1 = new CustomerDetailsDto(1, "John", "Doe", "1234567890", "Prefers window seat", permanentAddress1,
+				communicationAddress1, tour1);
+
+		// Customer 2
+		AddressDto permanentAddress2 = new AddressDto("456", "Oak Ave", "Beside Lake", "Shelbyville", "KY", 40065);
+		AddressDto communicationAddress2 = new AddressDto("789", "Maple Dr", "Downtown", "Shelbyville", "KY", 40065);
+		tour2 = new TourDetailsDto(2, "Shelbyville", 2500.00, "Miami",
+				Arrays.asList("South Beach", "Art Deco District"), "Beach Fun");
+		customer2 = new CustomerDetailsDto(2, "Jane", "Smith", "0987654321", "Allergic to nuts", permanentAddress2,
+				communicationAddress2, tour2);
+
+		// Customer 3
+		AddressDto permanentAddress3 = new AddressDto("789", "Pine Ln", "Opposite Mall", "Capital City", "NY", 12201);
+		AddressDto communicationAddress3 = new AddressDto("101", "Elm Rd", "Near Library", "Capital City", "NY", 12201);
+		tour3 = new TourDetailsDto(3, "Capital City", 3500.00, "San Francisco",
+				Arrays.asList("Golden Gate Bridge", "Alcatraz"), "City Explorer");
+		customer3 = new CustomerDetailsDto(3, "Peter", "Jones", "1122334455", "Needs wheelchair access",
+				permanentAddress3, communicationAddress3, tour3);
+		customers.add(customer1);
+		customers.add(customer2);
+		customers.add(customer3);
+		tours.add(tour1);
+		tours.add(tour2);
+		tours.add(tour3);
+	}
+
+	@Test
+	@WithMockUser
+	void testGetAllCustomers() throws Exception {
+
+		when(customerDetailsServiceImpl.getAll()).thenReturn(customers);
+		mockMvc.perform(get("/api/travel_agency")).andExpect(status().isOk()).andExpect(jsonPath("$.size()").value(3))
+				.andExpect(jsonPath("$[0].firstName").value("John"))
+				.andExpect(jsonPath("$[1].permanentAdd.houseNumber").value("456"))
+				.andExpect(jsonPath("$[2].tour.packageName").value("City Explorer"));
+		verify(customerDetailsServiceImpl, times(1)).getAll();
+
+	}
+
+	@Test
+	@WithMockUser
+	void testGetCustomerById() throws Exception {
+
+		when(customerDetailsServiceImpl.getById(anyInt())).thenReturn(customer1);
+		mockMvc.perform(get("/api/travel_agency/customers/1")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.firstName").value("John"))
+				.andExpect(jsonPath("$.permanentAdd.houseNumber").value("123"))
+				.andExpect(jsonPath("$.tour.packageName").value("Weekend Getaway"));
+		verify(customerDetailsServiceImpl, times(1)).getById(anyInt());
+	}
+
+	@Test
+	@WithMockUser
+	void testGetCustomerByLastName() throws Exception {
+
+		when(customerDetailsServiceImpl.getByLastName(anyString())).thenReturn(customers);
+		mockMvc.perform(get("/api/travel_agency/customers/lastname/Doe")).andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].firstName").value("John"))
+				.andExpect(jsonPath("$[0].permanentAdd.houseNumber").value("123"))
+				.andExpect(jsonPath("$[0].tour.packageName").value("Weekend Getaway"));
+		verify(customerDetailsServiceImpl, times(1)).getByLastName(anyString());
+	}
+
+	@Test
+	@WithMockUser
+	void testGetCustomerByPackageName() throws Exception {
+
+		when(customerDetailsServiceImpl.getByTour(anyString())).thenReturn(customers);
+		mockMvc.perform(get("/api/travel_agency/customers/tour/Weekend Getaway")).andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].firstName").value("John"))
+				.andExpect(jsonPath("$[0].permanentAdd.houseNumber").value("123"))
+				.andExpect(jsonPath("$[0].tour.packageName").value("Weekend Getaway"));
+		verify(customerDetailsServiceImpl, times(1)).getByTour(anyString());
+	}
+
+	@Test
+	@WithMockUser
+	void testGetTours() throws Exception {
+
+		when(customerDetailsServiceImpl.getAllTours()).thenReturn(tours);
+		mockMvc.perform(get("/api/travel_agency/tours")).andExpect(status().isOk())
+				.andExpect(jsonPath("$[0].startLocation").value("Springfield"))
+				.andExpect(jsonPath("$[0].destLocation").value("Chicago"))
+				.andExpect(jsonPath("$[1].locationsCovered[0]").value("South Beach"))
+				.andExpect(jsonPath("$[2].packageName").value("City Explorer"));
+		verify(customerDetailsServiceImpl, times(1)).getAllTours();
+	}
+
+	@Test
+	@WithMockUser
+	void testGetTourDesc() throws Exception {
+
+		when(customerDetailsServiceImpl.getTourDesc(anyString())).thenReturn(tour1);
+		mockMvc.perform(get("/api/travel_agency/tours/Weekend Getaway")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.startLocation").value("Springfield"))
+				.andExpect(jsonPath("$.destLocation").value("Chicago"))
+				.andExpect(jsonPath("$.locationsCovered[0]").value("Lincoln Home"))
+				.andExpect(jsonPath("$.packageName").value("Weekend Getaway"));
+		verify(customerDetailsServiceImpl, times(1)).getTourDesc(anyString());
+	}
+
+	@Test
+	@WithMockUser(roles = "ADMIN")
+	void testAddCustomer() throws Exception {
+
+		when(customerDetailsServiceImpl.addCustomer(any(CustomerDetailsDto.class))).thenReturn(customer1);
+		var jsonObject = objectMapper.writeValueAsString(customer1);
+		mockMvc.perform(
+				post("/api/travel_agency/customers").content(jsonObject).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated()).andExpect(jsonPath("$.firstName").value("John"))
+				.andExpect(jsonPath("$.permanentAdd.houseNumber").value("123"))
+				.andExpect(jsonPath("$.tour.packageName").value("Weekend Getaway"));
+		verify(customerDetailsServiceImpl, times(1)).addCustomer(any(CustomerDetailsDto.class));
+	}
+
+	@Test
+	@WithMockUser(roles = "ADMIN")
+	void testAddTour() throws Exception {
+
+		when(customerDetailsServiceImpl.addTour(any(TourDetailsDto.class))).thenReturn(tour1);
+		var jsonObject = objectMapper.writeValueAsString(tour1);
+		mockMvc.perform(post("/api/travel_agency/tours").content(jsonObject).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.startLocation").value("Springfield"))
+				.andExpect(jsonPath("$.destLocation").value("Chicago"))
+				.andExpect(jsonPath("$.locationsCovered[0]").value("Lincoln Home"))
+				.andExpect(jsonPath("$.packageName").value("Weekend Getaway"));
+		verify(customerDetailsServiceImpl, times(1)).addTour(any(TourDetailsDto.class));
+	}
+
+	@Test
+	@WithMockUser(roles = "ADMIN")
+	void testUpdateCustomer() throws Exception {
+
+		when(customerDetailsServiceImpl.updateCustomer(anyInt(), any(CustomerDetailsDto.class))).thenReturn(customer1);
+		var jsonObject = objectMapper.writeValueAsString(customer1);
+		mockMvc.perform(
+				put("/api/travel_agency/customers/2").content(jsonObject).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(status().isCreated()).andExpect(jsonPath("$.firstName").value("John"))
+				.andExpect(jsonPath("$.permanentAdd.houseNumber").value("123"))
+				.andExpect(jsonPath("$.tour.packageName").value("Weekend Getaway"));
+		verify(customerDetailsServiceImpl, times(1)).updateCustomer(anyInt(), any(CustomerDetailsDto.class));
+	}
+
+	@Test
+	@WithMockUser(roles = "ADMIN")
+	void testUpdateTour() throws Exception {
+
+		when(customerDetailsServiceImpl.updateTour(anyInt(), any(TourDetailsDto.class))).thenReturn(tour1);
+		var jsonObject = objectMapper.writeValueAsString(tour1);
+		mockMvc.perform(put("/api/travel_agency/tours/2").content(jsonObject).contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.startLocation").value("Springfield"))
+				.andExpect(jsonPath("$.destLocation").value("Chicago"))
+				.andExpect(jsonPath("$.locationsCovered[0]").value("Lincoln Home"))
+				.andExpect(jsonPath("$.packageName").value("Weekend Getaway"));
+		verify(customerDetailsServiceImpl, times(1)).updateTour(anyInt(), any(TourDetailsDto.class));
+	}
+
+	@Test
+	@WithMockUser(roles = "ADMIN")
+	void testDeleteCustomer() throws Exception {
+
+		mockMvc.perform(delete("/api/travel_agency/customers/delete/2")).andExpect(status().isAccepted());
+		verify(customerDetailsServiceImpl, times(1)).deleteCustomer(anyInt());
+	}
+
+}

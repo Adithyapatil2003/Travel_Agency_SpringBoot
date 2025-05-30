@@ -1,0 +1,28 @@
+package com.cts.dtos;
+
+import java.util.List;
+
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+
+public class TourDetailsDto {
+
+	private int id;
+	
+	private String startLocation;
+	
+	@Positive(message="Package cost cannot be negative")
+	private double cost;
+	
+	private String destLocation;
+	private List<String> locationsCovered;
+	
+	private String packageName;
+}

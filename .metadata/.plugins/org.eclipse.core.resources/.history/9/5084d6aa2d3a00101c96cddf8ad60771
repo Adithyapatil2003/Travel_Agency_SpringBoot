@@ -1,0 +1,471 @@
+package com.cts.service.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cts.dtos.AddressDto;
+import com.cts.dtos.CustomerDetailsDto;
+import com.cts.dtos.TourDetailsDto;
+import com.cts.entities.Address;
+import com.cts.entities.CustomerDetails;
+import com.cts.entities.TourDetails;
+import com.cts.exception.AddressNotFoundException;
+import com.cts.exception.CustomerNotFoundException;
+import com.cts.exception.TourNotFoundException;
+import com.cts.repository.AddressRepository;
+import com.cts.repository.CustomerDetailsRepository;
+import com.cts.repository.TourDetailsRepository;
+import com.cts.service.CustomerDetailsService;
+
+@Service
+
+public class CustomerDetailsServiceImpl implements CustomerDetailsService {
+
+	@Autowired
+	private CustomerDetailsRepository customerDetailsRepository;
+	@Autowired
+	private AddressRepository addressRepository;
+	@Autowired
+	private TourDetailsRepository tourDetailsRepository;
+
+	@Override
+	public List<CustomerDetailsDto> getAll() {
+
+		List<CustomerDetails> customers = customerDetailsRepository.findAll();
+
+		List<CustomerDetailsDto> customerDetailsDtos = new ArrayList<CustomerDetailsDto>();
+
+		for (CustomerDetails customerDetails : customers) {
+
+			AddressDto permanentAddressDto = new AddressDto(customerDetails.getPermanentAdd().getHouseNumber(),
+					customerDetails.getPermanentAdd().getStreet(), customerDetails.getPermanentAdd().getLandmark(),
+					customerDetails.getPermanentAdd().getCity(), customerDetails.getPermanentAdd().getState(),
+					customerDetails.getPermanentAdd().getPinCode());
+
+			AddressDto communicationAddressDto = new AddressDto(customerDetails.getCommunicationAdd().getHouseNumber(),
+					customerDetails.getCommunicationAdd().getStreet(),
+					customerDetails.getCommunicationAdd().getLandmark(),
+					customerDetails.getCommunicationAdd().getCity(), customerDetails.getCommunicationAdd().getState(),
+					customerDetails.getCommunicationAdd().getPinCode());
+
+			TourDetailsDto tourDetailsDto = new TourDetailsDto(customerDetails.getTourDetails().getId(),
+					customerDetails.getTourDetails().getStartLocation(), customerDetails.getTourDetails().getCost(),
+					customerDetails.getTourDetails().getDestLocation(),
+					customerDetails.getTourDetails().getLocationsCovered(),
+					customerDetails.getTourDetails().getPackageName());
+
+			CustomerDetailsDto customerDetailsDto = new CustomerDetailsDto(customerDetails.getId(),
+					customerDetails.getFirstName(), customerDetails.getSecondName(), customerDetails.getPhone(),
+					customerDetails.getNotes(), permanentAddressDto, communicationAddressDto, tourDetailsDto);
+
+			customerDetailsDtos.add(customerDetailsDto);
+		}
+		return customerDetailsDtos;
+	}
+
+//-----------------------------------------------------------------------------------------------------------------------//
+	@Override
+	public CustomerDetailsDto getById(int id) {
+
+		CustomerDetails customerDetails = customerDetailsRepository.findById(id)
+				.orElseThrow(() -> new CustomerNotFoundException("Customer with id " + id + " not found"));
+
+		AddressDto permanentAddressDto = new AddressDto(customerDetails.getPermanentAdd().getHouseNumber(),
+				customerDetails.getPermanentAdd().getStreet(), customerDetails.getPermanentAdd().getLandmark(),
+				customerDetails.getPermanentAdd().getCity(), customerDetails.getPermanentAdd().getState(),
+				customerDetails.getPermanentAdd().getPinCode());
+
+		AddressDto communicationAddressDto = new AddressDto(customerDetails.getCommunicationAdd().getHouseNumber(),
+				customerDetails.getCommunicationAdd().getStreet(), customerDetails.getCommunicationAdd().getLandmark(),
+				customerDetails.getCommunicationAdd().getCity(), customerDetails.getCommunicationAdd().getState(),
+				customerDetails.getCommunicationAdd().getPinCode());
+
+		TourDetailsDto tourDetailsDto = new TourDetailsDto(customerDetails.getTourDetails().getId(),
+				customerDetails.getTourDetails().getStartLocation(), customerDetails.getTourDetails().getCost(),
+				customerDetails.getTourDetails().getDestLocation(),
+				customerDetails.getTourDetails().getLocationsCovered(),
+				customerDetails.getTourDetails().getPackageName());
+
+		CustomerDetailsDto customerDetailsDto = new CustomerDetailsDto(customerDetails.getId(),
+				customerDetails.getFirstName(), customerDetails.getSecondName(), customerDetails.getPhone(),
+				customerDetails.getNotes(), permanentAddressDto, communicationAddressDto, tourDetailsDto);
+
+		return customerDetailsDto;
+	}
+
+//----------------------------------------------------------------------------------------------------------------------//
+	@Override
+	public List<CustomerDetailsDto> getByLastName(String lastName) {
+
+		List<CustomerDetails> customerDetails = customerDetailsRepository.findBySecondName(lastName);
+
+		List<CustomerDetailsDto> customerDetailsDtos = new ArrayList<CustomerDetailsDto>();
+
+		for (CustomerDetails customerDetail : customerDetails) {
+
+			AddressDto permanentAddressDto = new AddressDto(customerDetail.getPermanentAdd().getHouseNumber(),
+					customerDetail.getPermanentAdd().getStreet(), customerDetail.getPermanentAdd().getLandmark(),
+					customerDetail.getPermanentAdd().getCity(), customerDetail.getPermanentAdd().getState(),
+					customerDetail.getPermanentAdd().getPinCode());
+
+			AddressDto communicationAddressDto = new AddressDto(customerDetail.getCommunicationAdd().getHouseNumber(),
+					customerDetail.getCommunicationAdd().getStreet(),
+					customerDetail.getCommunicationAdd().getLandmark(), customerDetail.getCommunicationAdd().getCity(),
+					customerDetail.getCommunicationAdd().getState(), customerDetail.getCommunicationAdd().getPinCode());
+
+			TourDetailsDto tourDetailsDto = new TourDetailsDto(customerDetail.getTourDetails().getId(),
+					customerDetail.getTourDetails().getStartLocation(), customerDetail.getTourDetails().getCost(),
+					customerDetail.getTourDetails().getDestLocation(),
+					customerDetail.getTourDetails().getLocationsCovered(),
+					customerDetail.getTourDetails().getPackageName());
+
+			CustomerDetailsDto customerDetailsDto = new CustomerDetailsDto(customerDetail.getId(),
+					customerDetail.getFirstName(), customerDetail.getSecondName(), customerDetail.getPhone(),
+					customerDetail.getNotes(), permanentAddressDto, communicationAddressDto, tourDetailsDto);
+
+			customerDetailsDtos.add(customerDetailsDto);
+
+		}
+		return customerDetailsDtos;
+	}
+
+//------------------------------------------------------------------------------------------------------------------------//
+	@Override
+	public List<TourDetailsDto> getAllTours() {
+
+		List<TourDetails> packages = tourDetailsRepository.findAll();
+
+		List<TourDetailsDto> dtos = new ArrayList<TourDetailsDto>();
+
+		for (TourDetails tourDetail : packages) {
+
+			TourDetailsDto tourDetailsDto = new TourDetailsDto(tourDetail.getId(), tourDetail.getStartLocation(),
+					tourDetail.getCost(), tourDetail.getDestLocation(), tourDetail.getLocationsCovered(),
+					tourDetail.getPackageName());
+
+			dtos.add(tourDetailsDto);
+		}
+		return dtos;
+	}
+
+//------------------------------------------------------------------------------------------------------------------------//
+	@Override
+	public List<CustomerDetailsDto> getByTour(String packageName) {
+
+		List<TourDetails> packages = tourDetailsRepository.findByPackageName(packageName);
+
+		if (packages.size() != 0) {
+
+			List<CustomerDetails> customerDetails = customerDetailsRepository.findByTourDetails(packages.getFirst());
+
+			if (customerDetails.size() != 0) {
+
+				List<CustomerDetailsDto> customerDetailsDtos = new ArrayList<CustomerDetailsDto>();
+
+				for (CustomerDetails customerDetail : customerDetails) {
+
+					AddressDto permanentAddressDto = new AddressDto(customerDetail.getPermanentAdd().getHouseNumber(),
+							customerDetail.getPermanentAdd().getStreet(),
+							customerDetail.getPermanentAdd().getLandmark(), customerDetail.getPermanentAdd().getCity(),
+							customerDetail.getPermanentAdd().getState(), customerDetail.getPermanentAdd().getPinCode());
+
+					AddressDto communicationAddressDto = new AddressDto(
+							customerDetail.getCommunicationAdd().getHouseNumber(),
+							customerDetail.getCommunicationAdd().getStreet(),
+							customerDetail.getCommunicationAdd().getLandmark(),
+							customerDetail.getCommunicationAdd().getCity(),
+							customerDetail.getCommunicationAdd().getState(),
+							customerDetail.getCommunicationAdd().getPinCode());
+
+					TourDetailsDto tourDetailsDto = new TourDetailsDto(customerDetail.getTourDetails().getId(),
+							customerDetail.getTourDetails().getStartLocation(),
+							customerDetail.getTourDetails().getCost(),
+							customerDetail.getTourDetails().getDestLocation(),
+							customerDetail.getTourDetails().getLocationsCovered(),
+							customerDetail.getTourDetails().getPackageName());
+
+					CustomerDetailsDto customerDetailsDto = new CustomerDetailsDto(customerDetail.getId(),
+							customerDetail.getFirstName(), customerDetail.getSecondName(), customerDetail.getPhone(),
+							customerDetail.getNotes(), permanentAddressDto, communicationAddressDto, tourDetailsDto);
+
+					customerDetailsDtos.add(customerDetailsDto);
+
+				}
+				return customerDetailsDtos;
+			} else {
+				throw new CustomerNotFoundException("No customer is registered with " + packageName);
+			}
+		} else {
+			throw new TourNotFoundException("Tour with " + packageName + " does not exist");
+		}
+	}
+
+//------------------------------------------------------------------------------------------------------------------------//
+	@Override
+	public TourDetailsDto getTourDesc(String packageName) {
+		TourDetails tourDetail = tourDetailsRepository.findByPackageName(packageName).getFirst();
+
+		TourDetailsDto tourDetailsDto = new TourDetailsDto(tourDetail.getId(), tourDetail.getStartLocation(),
+				tourDetail.getCost(), tourDetail.getDestLocation(), tourDetail.getLocationsCovered(),
+				tourDetail.getPackageName());
+
+		return tourDetailsDto;
+	}
+
+//------------------------------------------------------------------------------------------------------------------------//
+	@Override
+	public CustomerDetailsDto addCustomer(CustomerDetailsDto customerDetailsDto) {
+
+		AddressDto permanentAddressDto = customerDetailsDto.getPermanentAdd();
+		AddressDto communicationAddressDto = customerDetailsDto.getCommunuicationAdd();
+		TourDetailsDto tourDetailsDto = customerDetailsDto.getTour();
+
+		Address permanentAddress = new Address(0, permanentAddressDto.getHouseNumber(), permanentAddressDto.getStreet(),
+				permanentAddressDto.getLandmark(), permanentAddressDto.getCity(), permanentAddressDto.getState(),
+				permanentAddressDto.getPinCode());
+
+		Address communicationAddress = new Address(0, communicationAddressDto.getHouseNumber(),
+				communicationAddressDto.getStreet(), communicationAddressDto.getLandmark(),
+				communicationAddressDto.getCity(), communicationAddressDto.getState(),
+				communicationAddressDto.getPinCode());
+
+		TourDetails existingTours = new TourDetails(0, tourDetailsDto.getStartLocation(), tourDetailsDto.getCost(),
+				tourDetailsDto.getDestLocation(), tourDetailsDto.getLocationsCovered(),
+				tourDetailsDto.getPackageName());
+
+		if (tourDetailsRepository.existsByPackageName(customerDetailsDto.getTour().getPackageName())) {
+			existingTours = tourDetailsRepository.findByPackageName(customerDetailsDto.getTour().getPackageName())
+					.get(0);
+		}
+		tourDetailsRepository.save(existingTours);
+
+		CustomerDetails customerDetails = new CustomerDetails(0, customerDetailsDto.getFirstName(),
+				customerDetailsDto.getSecondName(), customerDetailsDto.getPhone(), customerDetailsDto.getNotes(),
+				permanentAddress, communicationAddress, existingTours);
+
+		CustomerDetails savedCustomerDetails = customerDetailsRepository.save(customerDetails);
+
+		AddressDto savedPermanentAddressDto = new AddressDto(savedCustomerDetails.getPermanentAdd().getHouseNumber(),
+				savedCustomerDetails.getPermanentAdd().getStreet(),
+				savedCustomerDetails.getPermanentAdd().getLandmark(), savedCustomerDetails.getPermanentAdd().getCity(),
+				savedCustomerDetails.getPermanentAdd().getState(), savedCustomerDetails.getPermanentAdd().getPinCode());
+
+		AddressDto savedCommunicationAddressDto = new AddressDto(
+				savedCustomerDetails.getCommunicationAdd().getHouseNumber(),
+				savedCustomerDetails.getCommunicationAdd().getStreet(),
+				savedCustomerDetails.getCommunicationAdd().getLandmark(),
+				savedCustomerDetails.getCommunicationAdd().getCity(),
+				savedCustomerDetails.getCommunicationAdd().getState(),
+				savedCustomerDetails.getCommunicationAdd().getPinCode());
+
+		TourDetailsDto savedTourDetailsDto = new TourDetailsDto(savedCustomerDetails.getTourDetails().getId(),
+				savedCustomerDetails.getTourDetails().getStartLocation(),
+				savedCustomerDetails.getTourDetails().getCost(),
+				savedCustomerDetails.getTourDetails().getDestLocation(),
+				savedCustomerDetails.getTourDetails().getLocationsCovered(),
+				savedCustomerDetails.getTourDetails().getPackageName());
+
+		CustomerDetailsDto savedCustomerDetailsDto = new CustomerDetailsDto(savedCustomerDetails.getId(),
+				savedCustomerDetails.getFirstName(), savedCustomerDetails.getSecondName(),
+				savedCustomerDetails.getPhone(), savedCustomerDetails.getNotes(), savedPermanentAddressDto,
+				savedCommunicationAddressDto, savedTourDetailsDto);
+
+		return savedCustomerDetailsDto;
+	}
+
+//--------------------------------------------------------------------------------------------------------------------//
+	@Override
+	public TourDetailsDto addTour(TourDetailsDto tourDetailsDto) {
+
+		TourDetails tourDetails = new TourDetails(tourDetailsDto.getId(), tourDetailsDto.getStartLocation(),
+				tourDetailsDto.getCost(), tourDetailsDto.getDestLocation(), tourDetailsDto.getLocationsCovered(),
+				tourDetailsDto.getPackageName());
+
+		if (tourDetailsRepository.existsByPackageName(tourDetailsDto.getPackageName())) {
+			tourDetails = tourDetailsRepository.findByPackageName(tourDetailsDto.getPackageName()).get(0);
+		}
+
+		TourDetails addedTour = tourDetailsRepository.save(tourDetails);
+
+		TourDetailsDto tourDetailsDto2 = new TourDetailsDto(addedTour.getId(), addedTour.getStartLocation(),
+				addedTour.getCost(), addedTour.getDestLocation(), addedTour.getLocationsCovered(),
+				addedTour.getPackageName());
+
+		return tourDetailsDto2;
+	}
+
+//---------------------------------------------------------------------------------------------------------------//
+	private Address updateAddress(AddressDto updateAdd, Address currentAdd) {
+
+		if (updateAdd.getHouseNumber() != null) {
+			currentAdd.setHouseNumber(updateAdd.getHouseNumber());
+		}
+
+		if (updateAdd.getStreet() != null) {
+			currentAdd.setStreet(updateAdd.getStreet());
+		}
+
+		if (updateAdd.getLandmark() != null) {
+			currentAdd.setLandmark(updateAdd.getLandmark());
+		}
+
+		if (updateAdd.getCity() != null) {
+			currentAdd.setCity(updateAdd.getCity());
+		}
+
+		if (updateAdd.getState() != null) {
+			currentAdd.setState(updateAdd.getState());
+		}
+
+		if (updateAdd.getPinCode() != 0) {
+			currentAdd.setPinCode(updateAdd.getPinCode());
+		}
+
+		return currentAdd;
+	}
+
+//------------------------------------------------------------------------------------------------------------//
+	@Override
+	public CustomerDetailsDto updateCustomer(int id, CustomerDetailsDto customerDetailsDto) {
+
+		CustomerDetails customerDetails = customerDetailsRepository.findById(id)
+				.orElseThrow(() -> new CustomerNotFoundException("Customer with id " + id + " not found"));
+
+		if (customerDetailsDto.getPermanentAdd() != null) {
+			Address updatedPermanentAddress = updateAddress(customerDetailsDto.getPermanentAdd(),
+					customerDetails.getPermanentAdd());
+
+			customerDetails.setPermanentAdd(updatedPermanentAddress);
+		}
+
+		if (customerDetailsDto.getCommunuicationAdd() != null) {
+			Address updatedCommunicationAddress = updateAddress(customerDetailsDto.getCommunuicationAdd(),
+					customerDetails.getCommunicationAdd());
+
+			customerDetails.setCommunicationAdd(updatedCommunicationAddress);
+		}
+
+		TourDetailsDto tourDetailsDto = customerDetailsDto.getTour();
+
+		TourDetails tourDetails = customerDetails.getTourDetails();
+
+		if (tourDetailsDto != null) {
+
+			if (tourDetailsDto.getStartLocation() != null) {
+				tourDetails.setStartLocation(tourDetailsDto.getStartLocation());
+			}
+
+			if (tourDetailsDto.getDestLocation() != null) {
+				tourDetails.setDestLocation(tourDetailsDto.getDestLocation());
+			}
+
+			if (tourDetailsDto.getCost() != 0) {
+				tourDetails.setCost(tourDetailsDto.getCost());
+			}
+
+			if (tourDetailsDto.getLocationsCovered() != null) {
+				tourDetails.setLocationsCovered(tourDetailsDto.getLocationsCovered());
+			}
+
+			if (tourDetailsDto.getPackageName() != null) {
+				tourDetails.setPackageName(tourDetailsDto.getPackageName());
+			}
+
+			customerDetails.setTourDetails(tourDetails);
+		}
+
+		if (customerDetailsDto.getFirstName() != null) {
+			customerDetails.setFirstName(customerDetailsDto.getFirstName());
+		}
+
+		if (customerDetailsDto.getSecondName() != null) {
+			customerDetails.setSecondName(customerDetailsDto.getSecondName());
+		}
+
+		if (customerDetailsDto.getPhone() != null) {
+			customerDetails.setPhone(customerDetailsDto.getPhone());
+		}
+
+		if (customerDetailsDto.getNotes() != null) {
+			customerDetails.setNotes(customerDetailsDto.getNotes());
+
+		}
+
+		CustomerDetails updatedCustomer = customerDetailsRepository.save(customerDetails);
+
+		AddressDto permanentAddressDto = new AddressDto(updatedCustomer.getPermanentAdd().getHouseNumber(),
+				updatedCustomer.getPermanentAdd().getStreet(), updatedCustomer.getPermanentAdd().getLandmark(),
+				updatedCustomer.getPermanentAdd().getCity(), updatedCustomer.getPermanentAdd().getState(),
+				updatedCustomer.getPermanentAdd().getPinCode());
+
+		AddressDto communicationAddressDto2 = new AddressDto(updatedCustomer.getCommunicationAdd().getHouseNumber(),
+				updatedCustomer.getCommunicationAdd().getStreet(), updatedCustomer.getCommunicationAdd().getLandmark(),
+				updatedCustomer.getCommunicationAdd().getCity(), updatedCustomer.getCommunicationAdd().getState(),
+				updatedCustomer.getCommunicationAdd().getPinCode());
+
+		TourDetailsDto updatedTourDto = new TourDetailsDto(updatedCustomer.getTourDetails().getId(),
+				updatedCustomer.getTourDetails().getStartLocation(), updatedCustomer.getTourDetails().getCost(),
+				updatedCustomer.getTourDetails().getDestLocation(),
+				updatedCustomer.getTourDetails().getLocationsCovered(),
+				updatedCustomer.getTourDetails().getPackageName());
+
+		CustomerDetailsDto updatedCustomerDto = new CustomerDetailsDto(updatedCustomer.getId(),
+				updatedCustomer.getFirstName(), updatedCustomer.getSecondName(), updatedCustomer.getPhone(),
+				updatedCustomer.getNotes(), permanentAddressDto, communicationAddressDto2, updatedTourDto);
+
+		return updatedCustomerDto;
+	}
+
+//-----------------------------------------------------------------------------------------------------------------//
+	@Override
+	public TourDetailsDto updateTour(int id, TourDetailsDto tourDetailsDto) {
+
+		TourDetails tourDetails = tourDetailsRepository.findById(id)
+				.orElseThrow(() -> new TourNotFoundException("Tour details with id" + id + " not found"));
+
+		if (tourDetailsDto.getStartLocation() != null) {
+			tourDetails.setStartLocation(tourDetailsDto.getStartLocation());
+		}
+
+		if (tourDetailsDto.getDestLocation() != null) {
+			tourDetails.setDestLocation(tourDetailsDto.getDestLocation());
+		}
+
+		if (tourDetailsDto.getLocationsCovered() != null) {
+			tourDetails.setLocationsCovered(tourDetailsDto.getLocationsCovered());
+		}
+
+		if (tourDetailsDto.getCost() != 0) {
+			tourDetails.setCost(tourDetailsDto.getCost());
+		}
+
+		if (tourDetailsDto.getPackageName() != null) {
+			tourDetails.setPackageName(tourDetailsDto.getPackageName());
+		}
+
+		TourDetails updatedTourDetails = tourDetailsRepository.save(tourDetails);
+
+		TourDetailsDto tourDetailsDto2 = new TourDetailsDto(updatedTourDetails.getId(),
+				updatedTourDetails.getStartLocation(), updatedTourDetails.getCost(),
+				updatedTourDetails.getDestLocation(), updatedTourDetails.getLocationsCovered(),
+				updatedTourDetails.getPackageName());
+
+		return tourDetailsDto2;
+	}
+
+//-----------------------------------------------------------------------------------------------------------------//
+	@Override
+	public void deleteCustomer(int id) {
+		CustomerDetails customer = customerDetailsRepository.findById(id)
+				.orElseThrow(() -> new CustomerNotFoundException("Customer with id" + id + " is not found"));
+		// deleting addresses related to customer
+		addressRepository.deleteById(customer.getPermanentAdd().getId());
+		addressRepository.deleteById(customer.getCommunicationAdd().getId());
+		customerDetailsRepository.deleteById(id);
+	}
+
+//------------------------------------------------------------------------------------------------------------------//
+}

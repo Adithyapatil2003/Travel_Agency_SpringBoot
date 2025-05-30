@@ -1,0 +1,42 @@
+package com.cts.entities;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Entity
+@Table(name = "address")
+public class Address {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int id;
+	@NotNull(message = "House number can't be empty")
+	private String houseNumber;
+	@NotNull(message = "Street can't be empty")
+	private String street;
+	private String landmark;
+	@NotNull(message = "City can't be empty")
+	private String city;
+	@NotNull(message = "State can't be empty")
+	private String state;
+	@Max(999999)
+	@Min(100000)	
+	@Digits(integer = 6, fraction = 0, message = "Pincode must be of 6 digit")
+	@NotNull
+	private long pinCode;
+
+}

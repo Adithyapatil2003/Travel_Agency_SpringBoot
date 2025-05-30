@@ -1,0 +1,100 @@
+-- INSERT statements for address
+INSERT INTO address (house_number, street, landmark, city, state, pin_code) VALUES
+('101', 'MG Road', 'Near Mall', 'Bangalore', 'Karnataka', 560001),
+('202', 'Anna Salai', 'Opposite Church', 'Chennai', 'Tamil Nadu', 600002),
+('303', 'Park Street', 'Next to Cafe', 'Kolkata', 'West Bengal', 700016),
+('404', 'FC Road', 'Near College', 'Pune', 'Maharashtra', 411005),
+('505', 'Linking Road', 'Behind Mall', 'Mumbai', 'Maharashtra', 400050),
+('606', 'Banjara Hills', 'Near Lake', 'Hyderabad', 'Telangana', 500034),
+('707', 'Sector 17', 'Near Fountain', 'Chandigarh', 'Punjab', 160017),
+('808', 'Ashok Nagar', 'Near Metro', 'Delhi', 'Delhi', 110018),
+('909', 'Civil Lines', 'Next to Park', 'Jaipur', 'Rajasthan', 302006),
+('110', 'Lalbagh Road', 'Near Garden', 'Bangalore', 'Karnataka', 560004),
+('111', 'T Nagar', 'Near Temple', 'Chennai', 'Tamil Nadu', 600017),
+('112', 'Salt Lake', 'Near Stadium', 'Kolkata', 'West Bengal', 700091),
+('113', 'Koregaon Park', 'Near Club', 'Pune', 'Maharashtra', 411001),
+('114', 'Andheri West', 'Near Station', 'Mumbai', 'Maharashtra', 400058);
+
+-------------------------------------------------------------------------------
+INSERT INTO tour_details (start_location, cost, dest_location, package_name)
+VALUES ('Delhi', 12000, 'Jaipur', 'Royal Rajasthan');
+
+SET @tour_id1 = LAST_INSERT_ID();
+
+INSERT INTO tour_details (start_location, cost, dest_location, package_name)
+VALUES ('Mumbai', 18500, 'Goa', 'Goa Beach Escape');
+
+SET @tour_id2 = LAST_INSERT_ID();
+
+INSERT INTO tour_details (start_location, cost, dest_location, package_name)
+VALUES ('Kochi', 16000, 'Alleppey', 'Kerala Backwaters');
+
+SET @tour_id3 = LAST_INSERT_ID();
+
+INSERT INTO tour_details (start_location, cost, dest_location, package_name)
+VALUES ('Chandigarh', 20000, 'Manali', 'Himalayan Adventure');
+
+SET @tour_id4 = LAST_INSERT_ID();
+
+INSERT INTO tour_details (start_location, cost, dest_location, package_name)
+VALUES ('Lucknow', 10000, 'Varanasi', 'Spiritual Varanasi');
+
+SET @tour_id5 = LAST_INSERT_ID();
+
+-------------------------------------------------------------------------------
+-- INSERT statements for tour_locations
+INSERT INTO tour_locations (location_id, locations)
+VALUES
+(@tour_id1, 'Delhi'),
+(@tour_id1, 'Jaipur'),
+(@tour_id1, 'Jodhpur'),
+(@tour_id1, 'Udaipur'),
+(@tour_id1, 'Pushkar');
+
+INSERT INTO tour_locations (location_id, locations)
+VALUES
+(@tour_id2, 'Mumbai'),
+(@tour_id2, 'Panaji'),
+(@tour_id2, 'Calangute'),
+(@tour_id2, 'Baga'),
+(@tour_id2, 'Anjuna');
+
+INSERT INTO tour_locations (location_id, locations)
+VALUES
+(@tour_id3, 'Kochi'),
+(@tour_id3, 'Munnar'),
+(@tour_id3, 'Thekkady'),
+(@tour_id3, 'Kumarakom'),
+(@tour_id3, 'Alleppey');
+
+INSERT INTO tour_locations (location_id, locations)
+VALUES
+(@tour_id4, 'Chandigarh'),
+(@tour_id4, 'Kullu'),
+(@tour_id4, 'Manali'),
+(@tour_id4, 'Solang Valley'),
+(@tour_id4, 'Rohtang Pass');
+
+INSERT INTO tour_locations (location_id, locations)
+VALUES
+(@tour_id5, 'Lucknow'),
+(@tour_id5, 'Ayodhya'),
+(@tour_id5, 'Prayagraj'),
+(@tour_id5, 'Sarnath'),
+(@tour_id5, 'Varanasi');
+-------------------------------------------------------------------------------
+
+INSERT INTO customer_details (first_name, second_name, phone, notes, permanent_add_id, communication_add_id, tour_id) VALUES
+('Adithya', 'Patil', '9876543210', 'Vegetarian meal preferred', 1, 2, 1),
+('Bhuvan', 'CS', '9123456789', 'Window seat requested', 3, 4, 2),
+('Virat', 'Kohli', '9988776655', 'Allergic to peanuts', 5, 6, 3),
+('Sneha', 'Iyer', '9090909090', 'Prefers early check-in', 7, 8, 4),
+('Arjun', 'Mehta', '9871234567', 'Traveling with pet', 9, 10, 5),
+('Priya', 'Das', '9765432109', 'Requires wheelchair access', 11, 12, 1),
+('Karan', 'Singh', '9654321098', 'Celebrating anniversary', 13, 14, 2);
+
+--------------------------------------------------------------------------------------
+
+
+
+-------------------------------------------------------------------------------------------------

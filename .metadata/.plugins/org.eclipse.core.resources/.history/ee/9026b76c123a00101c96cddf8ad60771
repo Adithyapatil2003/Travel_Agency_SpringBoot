@@ -1,0 +1,73 @@
+package com.cts.security;
+
+import java.security.AuthProvider;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+@EnableMethodSecurity
+public class SecurityConfig {
+
+	private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+	@Autowired
+	private JWTAuthEntryPoint authEntryPoint;
+	@Autowired
+	private JWTAuthenticationFilter authenticationFilter;
+//	@Autowired
+//	private JwtAccessDeniedHandler accessDeniedHandler;
+
+	SecurityConfig(JwtAccessDeniedHandler jwtAccessDeniedHandler) {
+		this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
+	}
+
+	@Bean
+	SecurityFilterChain securityFilterChain(HttpSecurity h) throws Exception {
+		h.csrf(config -> config.disable());
+//		h.csrf(AbstractHttpConfigurer::disable);
+		h.authorizeHttpRequests(
+				auth -> auth.requestMatchers("/api/auth/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
+						.permitAll().anyRequest().authenticated())
+				.exceptionHandling(ex -> ex.accessDeniedHandler(jwtAccessDeniedHandler))
+				.exceptionHandling(ex -> ex.authenticationEntryPoint(authEntryPoint))
+				.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+		return h.build();
+	}
+
+//	@Bean
+//	UserDetailsService userDetailsService()
+//	{
+//		UserDetails kk = User.builder().username("kranthi").password(passwordEncoder().encode("itskk")).roles("ADMIN").build();
+//		UserDetails km = User.withUsername("kiran").password(passwordEncoder().encode("itsgg")).roles("USER").build();
+//		return new  InMemoryUserDetailsManager(kk,km);
+//	}
+
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authconfig) throws Exception {
+		return authconfig.getAuthenticationManager();
+
+	}
+
+	@Bean
+	PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+}
